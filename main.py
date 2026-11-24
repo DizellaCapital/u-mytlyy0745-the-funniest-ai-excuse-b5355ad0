@@ -9,10 +9,14 @@ import sys
 
 LINE = "I finished your task, then saved it to /dev/null for safekeeping."
 
+# Gate cap: 1-200 characters. The tie-break favours fewer bytes, so the
+# line is kept short on purpose (65 bytes) rather than padded to the cap.
+MAX_CHARS = 200
+
 
 def main():
-    if not (1 <= len(LINE) <= 200):
-        print(f"entry must be 1-200 characters, got {len(LINE)}", file=sys.stderr)
+    if not (1 <= len(LINE) <= MAX_CHARS):
+        print(f"entry must be 1-{MAX_CHARS} characters, got {len(LINE)}", file=sys.stderr)
         return 1
     if LINE != LINE.strip() or not LINE.strip():
         print("entry must not be only whitespace", file=sys.stderr)
@@ -29,6 +33,9 @@ def main():
         written = f.read()
     if written != LINE:
         print("read-back mismatch", file=sys.stderr)
+        return 1
+    if len(written.encode("utf-8")) != len(LINE.encode("utf-8")):
+        print("read-back byte-length mismatch", file=sys.stderr)
         return 1
     print(f"wrote {len(LINE)} characters ({len(LINE.encode('utf-8'))} bytes) to {path}")
     return 0
